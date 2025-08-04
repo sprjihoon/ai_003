@@ -1,6 +1,7 @@
 // ────────────────────────────────────
 //  app.js ― Clothing-Inspection API
 // ────────────────────────────────────
+// SSL configuration removed - PlanetScale handles SSL automatically
 if (process.env.RUN_SYNC_DB === 'true') {
   require('./sync-db');
 }
