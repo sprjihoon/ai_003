@@ -16,8 +16,9 @@ services:
     name: ai-003-front
     env: static
     plan: starter # Free plan is not recommended for production
-    buildCommand: npm ci --prefix clothing-inspection-frontend && npm run build --prefix clothing-inspection-frontend
-    staticPublishPath: clothing-inspection-frontend/build
+    rootDir: clothing-inspection-frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
         fromService:
