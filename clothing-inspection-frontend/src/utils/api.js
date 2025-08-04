@@ -5,9 +5,8 @@
   * 프런트 기본 백엔드 주소
   * 모든 요청은 `${API_BASE}/api/...` 형식으로 호출한다.
   */
- export const API_BASE =
-   'https://ap-002.onrender.com';
- export const API_URL = `${API_BASE}/api`;
+ export const API_BASE = '';
+ export const API_URL = '/api';
 
  const buildHeaders = (method = 'GET', hasBody, extraHeaders = {}) => {
    const token = localStorage.getItem('token');
@@ -29,14 +28,14 @@
 
  export const fetchWithAuth = async (endpoint, options = {}) => {
    const url = endpoint.startsWith('/api')
-     ? `${API_BASE}${endpoint}`
-     : `${API_BASE}/api${endpoint}`;
+     ? endpoint
+     : `/api${endpoint}`;
 
    const method = options.method || 'GET';
    const hasBody = !!options.body;
 
    const response = await fetch(url, {
-     credentials: 'include',
+     // credentials: 'include', // Same-origin requests dont need this
      ...options,
      headers: buildHeaders(method, hasBody, options.headers || {}),
    });
@@ -60,10 +59,10 @@
  };
 
  export const login = async (tenantId, username, password) => {
-   const response = await fetch(`${API_BASE}/api/users/login`, {
+   const response = await fetch('/api/users/login', {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
-     credentials: 'include',
+     // credentials: 'include', // Same-origin requests dont need this
      body: JSON.stringify({ tenantId, username, password }),
    });
 

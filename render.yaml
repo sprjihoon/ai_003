@@ -13,7 +13,7 @@ services:
     healthCheckPath: /api/healthz # Should be implemented in backend
 
   - type: static
-    name: frontend
+    name: ai-003-front
     env: static
     plan: starter # Free plan is not recommended for production
     buildCommand: cd clothing-inspection-frontend && npm ci && npm run build
@@ -27,7 +27,7 @@ services:
     routes:
       - type: rewrite
         source: "/api/*"
-        destination: "/api/:splat"
+        destination: "https://ai-003-backend.onrender.com/api/:splat"
       - type: rewrite
         source: "/*"
         destination: "/index.html"
