@@ -145,11 +145,6 @@ if (Product && ProductVariant) {
     as: 'ProductVariants',
     constraints: false
   });
-  ProductVariant.belongsTo(Product, {
-    foreignKey: 'productId',
-    as: 'product',
-    constraints: false
-  });
 }
 
 // Association: Inspection ⇄ InspectionDetail
