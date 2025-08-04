@@ -16,6 +16,7 @@ services:
     name: ai-003-front
     env: static
     plan: starter # Free plan is not recommended for production
+    rootDir: ./
     buildCommand: cd clothing-inspection-frontend && npm ci && npm run build
     staticPublishPath: clothing-inspection-frontend/build
     envVars:
