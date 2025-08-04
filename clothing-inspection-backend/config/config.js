@@ -11,9 +11,7 @@ module.exports = {
     dialectOptions: {
       decimalNumbers: true,
       ssl: {
-        // PlanetScale requires SSL, but we can trust the system's CA bundle
-        // rejectUnauthorized: true, // This is the default
-        ca: fs.readFileSync('/etc/ssl/certs/ca-certificates.crt', 'utf-8').toString(),
+        rejectUnauthorized: true
       }
     },
     logging: false
