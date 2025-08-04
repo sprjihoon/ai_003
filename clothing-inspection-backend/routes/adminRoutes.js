@@ -262,11 +262,8 @@ router.post('/create-super-admin', async (req, res) => {
       where: { tenant_id: 'master' },
       defaults: {
         tenant_id: 'master',
-        name: 'Master Tenant',
-        description: 'Super Admin Master Tenant for managing all tenants',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        tenant_name: 'Master Tenant',
+        tenant_type: 'fulfillment'
       }
     });
 
