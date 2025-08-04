@@ -10,8 +10,18 @@ if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
 let sequelize;
 
 if (process.env.DATABASE_URL) {
-  // PlanetScale DATABASE_URL 방식
-  const sanitizedUrl = process.env.DATABASE_URL.replace(/([?&])sslaccept=[^&]+&?/i, '$1').replace(/([?&])$/, '');
+  // PlanetScale DATABASE_URL 방식 - SSL 관련 모든 파라미터 제거
+  let sanitizedUrl = process.env.DATABASE_URL
+    .replace(/([?&])sslaccept=[^&]+&?/gi, '$1')
+    .replace(/([?&])ssl=[^&]+&?/gi, '$1')
+    .replace(/([?&])sslmode=[^&]+&?/gi, '$1')
+    .replace(/([?&])sslcert=[^&]+&?/gi, '$1')
+    .replace(/([?&])sslkey=[^&]+&?/gi, '$1')
+    .replace(/([?&])sslrootcert=[^&]+&?/gi, '$1')
+    .replace(/([?&])sslca=[^&]+&?/gi, '$1')
+    .replace(/([?&])$/, '');
+  
+  console.log('🔗 Using DATABASE_URL (SSL params removed)');
   
   sequelize = new Sequelize(sanitizedUrl, {
     dialect: 'mysql',
@@ -22,6 +32,7 @@ if (process.env.DATABASE_URL) {
   });
 } else {
   // 개별 환경변수 방식 (fallback)
+  console.log('🔗 Using individual DB environment variables');
   sequelize = new Sequelize(
     process.env.DB_NAME || 'clothing_inspection',
     process.env.DB_USER || 'root',
