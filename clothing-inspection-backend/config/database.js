@@ -10,7 +10,7 @@ if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
 let sequelize;
 
 if (process.env.DATABASE_URL) {
-  // PlanetScale DATABASE_URL 방식 - SSL 관련 모든 파라미터 제거
+  // PlanetScale DATABASE_URL 방식 - SSL 파라미터는 제거하고 dialectOptions에서 SSL 설정
   let sanitizedUrl = process.env.DATABASE_URL
     .replace(/([?&])sslaccept=[^&]+&?/gi, '$1')
     .replace(/([?&])ssl=[^&]+&?/gi, '$1')
@@ -21,10 +21,16 @@ if (process.env.DATABASE_URL) {
     .replace(/([?&])sslca=[^&]+&?/gi, '$1')
     .replace(/([?&])$/, '');
   
-  console.log('🔗 Using DATABASE_URL (SSL params removed)');
+  console.log('🔗 Using DATABASE_URL with PlanetScale SSL configuration');
   
   sequelize = new Sequelize(sanitizedUrl, {
     dialect: 'mysql',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
     logging: false,
     define: {
       foreignKeyConstraints: false
@@ -41,6 +47,12 @@ if (process.env.DATABASE_URL) {
       host: process.env.DB_HOST,
       port: process.env.DB_PORT || 3306,
       dialect: 'mysql',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      },
       logging: false,
       define: {
         foreignKeyConstraints: false
