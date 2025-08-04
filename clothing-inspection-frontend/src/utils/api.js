@@ -5,8 +5,8 @@
   * 프런트 기본 백엔드 주소
   * 모든 요청은 `${API_BASE}/api/...` 형식으로 호출한다.
   */
- export const API_BASE = process.env.REACT_APP_API_URL || 'https://ai-003-backend-web.onrender.com';
- export const API_URL = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : 'https://ai-003-backend-web.onrender.com/api';
+ export const API_BASE = process.env.REACT_APP_API_URL || 'https://ai-003-backend.onrender.com';
+ export const API_URL = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : 'https://ai-003-backend.onrender.com/api';
 
  const buildHeaders = (method = 'GET', hasBody, extraHeaders = {}) => {
    const token = localStorage.getItem('token');
