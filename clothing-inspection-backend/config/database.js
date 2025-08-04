@@ -10,11 +10,6 @@ const sanitizedUrl = process.env.DATABASE_URL.replace(/([?&])sslaccept=[^&]+&?/i
 
 const sequelize = new Sequelize(sanitizedUrl, {
   dialect: 'mysql',
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: true
-    }
-  },
   logging: false,
   define: {
     foreignKeyConstraints: false
