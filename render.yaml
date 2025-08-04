@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: backend
+    name: ai-003-backend
     env: docker
-    plan: standard # Free plan is not recommended for production
+    plan: starter # Free plan is not recommended for production
     dockerfilePath: clothing-inspection-backend/Dockerfile
     dockerContext: ./clothing-inspection-backend
     envVars:
@@ -22,7 +22,7 @@ services:
       - key: REACT_APP_API_URL
         fromService:
           type: web
-          name: backend
+          name: ai-003-backend
           property: url
     routes:
       - type: rewrite
