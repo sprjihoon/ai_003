@@ -32,13 +32,6 @@ services:
         source: "/*"
         destination: "/index.html"
 
-  - type: mysql
-    name: db
-    plan: starter-db # Free plan has limitations
-    properties:
-      databaseName: clothing_inspection
-      user: clothing_user
-
 # Note: 1) create an Environment Group named 'production-env' in Render
 #       2) populate all variables (DB_PASSWORD, JWT_SECRET, SMTP_*, etc.)
 #       3) Ensure the backend service URL is correctly set for the frontend.
