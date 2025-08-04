@@ -242,4 +242,78 @@ router.post('/tenants', auth, isSuperAdmin, async (req,res)=>{
   }catch(err){ console.error('create tenant error', err); res.status(500).json({ message: err.message }); }
 });
 
+// 슈퍼 어드민 생성 엔드포인트 (보안을 위해 특별한 키 필요)
+router.post('/create-super-admin', async (req, res) => {
+  try {
+    const { secret } = req.body;
+    
+    // 보안키 확인 (환경변수 또는 하드코딩된 키)
+    if (secret !== 'CREATE_SUPER_ADMIN_2024') {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const bcrypt = require('bcrypt');
+    const { User, Tenant } = require('../models');
+
+    console.log('🚀 슈퍼 어드민 계정 생성 시작...');
+
+    // 마스터 테넌트 생성
+    const [masterTenant] = await Tenant.findOrCreate({
+      where: { tenant_id: 'master' },
+      defaults: {
+        tenant_id: 'master',
+        name: 'Master Tenant',
+        description: 'Super Admin Master Tenant for managing all tenants',
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+
+    // 기존 슈퍼 어드민 계정 삭제 (있다면)
+    await User.destroy({
+      where: { 
+        username: 'superadmin',
+        tenant_id: 'master'
+      }
+    });
+
+    // 슈퍼 어드민 계정 생성
+    const password = 'SuperAdmin2024!@#';
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const superAdmin = await User.create({
+      username: 'superadmin',
+      email: 'superadmin@ai003.com',
+      password: hashedPassword,
+      tenant_id: 'master',
+      company: 'AI_003 System',
+      role: 'super_admin',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    res.json({
+      success: true,
+      message: '슈퍼 어드민 계정이 성공적으로 생성되었습니다!',
+      account: {
+        tenantId: 'master',
+        username: 'superadmin',
+        email: 'superadmin@ai003.com',
+        password: password,
+        company: 'AI_003 System',
+        role: 'super_admin'
+      }
+    });
+
+  } catch (error) {
+    console.error('슈퍼 어드민 생성 오류:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '슈퍼 어드민 계정 생성 실패',
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router; 
