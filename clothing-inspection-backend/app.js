@@ -117,6 +117,24 @@ if (process.env.NODE_ENV === 'production') {
 /*────────────── 헬스체크 ───────────────*/
 app.get('/api/healthz', (_, res) => res.json({ status: 'ok' }));
 
+// 데이터베이스 연결 테스트 엔드포인트
+app.get('/api/db-test', async (_, res) => {
+  try {
+    console.log('🔍 Testing database connection...');
+    const sequelize = require('./config/database');
+    await sequelize.authenticate();
+    console.log('✅ Database connection successful');
+    res.json({ status: 'db-ok', message: 'Database connection successful' });
+  } catch (error) {
+    console.error('❌ Database connection failed:', error);
+    res.status(500).json({ 
+      status: 'db-error', 
+      message: error.message,
+      name: error.name
+    });
+  }
+});
+
 /*──────────────── 서버 기동 ────────────*/
 const PORT   = process.env.PORT || 3002;
 const server = app.listen(PORT, '0.0.0.0', () => {

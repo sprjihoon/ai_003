@@ -115,6 +115,25 @@ router.delete('/sounds/:id', auth, async (req,res)=>{
 // GET /api/settings/ui   (public)
 router.get('/ui', async (_req,res)=>{
   try{
+    console.log('🔍 /api/settings/ui endpoint called');
+    
+    // 임시로 데이터베이스 쿼리 없이 기본값 반환
+    const defaultResponse = {
+      theme: 'light',
+      logo: '/uploads/logo.png',
+      notice: '',
+      loginBgUrl: null,
+      soundPlayMode: 'random',
+      completeSoundUrl: null,
+      sounds: [],
+      startupSoundUrl: null
+    };
+    
+    console.log('✅ Returning default UI settings');
+    res.json(defaultResponse);
+    
+    // 주석 처리된 원래 코드 (데이터베이스 연결 안정화 후 복원)
+    /*
     const [theme,logoUrl,notice,loginBgUrl,soundPlayMode,startupSoundUrl] = await Promise.all([
       getSetting('theme'), getSetting('logoUrl'), getSetting('notice'), getSetting('loginBgUrl'), getSetting('soundPlayMode'), getSetting('startupSoundUrl')
     ]);
@@ -123,7 +142,11 @@ router.get('/ui', async (_req,res)=>{
     const soundUrls = sounds.map(s=>s.url);
     const randomSound = soundUrls.length ? soundUrls[Math.floor(Math.random()*soundUrls.length)] : null;
     res.json({ theme: theme||'light', logo: logoUrl||'/uploads/logo.png', notice: notice||'', loginBgUrl, soundPlayMode: soundPlayMode||'random', completeSoundUrl: randomSound, sounds: soundUrls, startupSoundUrl });
-  }catch(err){ res.status(500).json({ message:err.message }); }
+    */
+  }catch(err){ 
+    console.error('❌ /api/settings/ui error:', err);
+    res.status(500).json({ message:err.message }); 
+  }
 });
 
 // PUT /api/settings/sound-mode { mode: 'sequential'|'random' }
