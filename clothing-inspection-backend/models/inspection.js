@@ -63,12 +63,7 @@ const Inspection = sequelize.define('Inspection', {
 });
 
 Inspection.associate = models => {
-  Inspection.belongsTo(models.User, {
-    foreignKey: 'inspector_id',
-    as: 'inspector',
-    constraints: false
-  });
-
+  // Remove duplicate associations - they are already defined in index.js
   // Link to read tracking (no FK in PlanetScale)
   Inspection.hasMany(models.InspectionRead, {
     foreignKey: 'inspection_id',

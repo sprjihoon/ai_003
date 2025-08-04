@@ -107,10 +107,12 @@ if (Inspection && User) {
     as: 'readers',
     constraints: false
   });
+
   User.belongsToMany(Inspection, {
     through: InspectionRead,
     foreignKey: 'userId',
     otherKey: 'inspectionId',
+    as: 'readInspections',
     constraints: false
   });
 }
@@ -192,16 +194,13 @@ if (Inspection && InspectionReceiptPhoto) {
   });
 }
 
-// belongsTo inspector association
+// Remove the duplicate User.hasMany(Inspection) - it's already in user.js associate function
+
+// Add inspector association
 if (User && Inspection) {
   Inspection.belongsTo(User, {
     foreignKey: 'inspector_id',
     as: 'inspector',
-    constraints: false
-  });
-  User.hasMany(Inspection, {
-    foreignKey: 'inspector_id',
-    as: 'inspections',
     constraints: false
   });
 }
