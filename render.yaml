@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: ai-003-backend
+    name: ai-003-backend-web
     env: docker
-    plan: starter # Free plan is not recommended for production
+    plan: starter
     dockerfilePath: clothing-inspection-backend/Dockerfile
     dockerContext: ./clothing-inspection-backend
     envVars:
@@ -10,12 +10,12 @@ services:
       - key: PORT
         value: 10000
     autoDeploy: true
-    healthCheckPath: /api/healthz # Should be implemented in backend
+    healthCheckPath: /api/healthz
 
   - type: static
     name: ai-003-front
     env: static
-    plan: starter # Free plan is not recommended for production
+    plan: starter
     rootDir: clothing-inspection-frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: build
@@ -23,12 +23,12 @@ services:
       - key: REACT_APP_API_URL
         fromService:
           type: web
-          name: ai-003-backend
+          name: ai-003-backend-web
           property: url
     routes:
       - type: rewrite
         source: "/api/*"
-        destination: "https://ai-003-backend.onrender.com/api/:splat"
+        destination: "https://ai-003-backend-web.onrender.com/api/:splat"
       - type: rewrite
         source: "/*"
         destination: "/index.html"
