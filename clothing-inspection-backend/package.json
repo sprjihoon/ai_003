@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
-    "start": "npm run migrate && node app.js",
+    "prestart": "npx sequelize-cli db:migrate --env production",
+    "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"No backend tests available\" && exit 0"
   },
