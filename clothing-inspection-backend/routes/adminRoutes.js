@@ -264,8 +264,8 @@ router.post('/create-super-admin', async (req, res) => {
         tenant_id VARCHAR(64) NOT NULL UNIQUE,
         tenant_name VARCHAR(128) NOT NULL,
         tenant_type ENUM('fulfillment', 'brand') NOT NULL,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
 
@@ -275,11 +275,11 @@ router.post('/create-super-admin', async (req, res) => {
         username VARCHAR(255) NOT NULL UNIQUE,
         email VARCHAR(255) UNIQUE,
         password VARCHAR(255) NOT NULL,
-        tenant_id VARCHAR(64) NOT NULL DEFAULT 'default',
+        tenant_id VARCHAR(64) NOT NULL,
         company VARCHAR(255),
         role ENUM('operator', 'inspector', 'viewer', 'super_admin', 'admin', 'worker') NOT NULL DEFAULT 'inspector',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
 
