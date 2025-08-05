@@ -253,41 +253,57 @@ router.post('/create-super-admin', async (req, res) => {
     }
 
     const bcrypt = require('bcrypt');
-    const { User, Tenant } = require('../models');
+    const sequelize = require('../config/database');
 
     console.log('🚀 슈퍼 어드민 계정 생성 시작...');
 
-    // 마스터 테넌트 생성
-    const [masterTenant] = await Tenant.findOrCreate({
-      where: { tenant_id: 'master' },
-      defaults: {
-        tenant_id: 'master',
-        tenant_name: 'Master Tenant',
-        tenant_type: 'fulfillment'
-      }
-    });
+    // 테이블이 없으면 생성 (Raw SQL로 확실하게)
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS tenants (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        tenant_id VARCHAR(64) NOT NULL UNIQUE,
+        tenant_name VARCHAR(128) NOT NULL,
+        tenant_type ENUM('fulfillment', 'brand') NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
 
-    // 기존 슈퍼 어드민 계정 삭제 (있다면)
-    await User.destroy({
-      where: { 
-        username: 'superadmin',
-        tenant_id: 'master'
-      }
-    });
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        email VARCHAR(255) UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        tenant_id VARCHAR(64) NOT NULL DEFAULT 'default',
+        company VARCHAR(255),
+        role ENUM('operator', 'inspector', 'viewer', 'super_admin', 'admin', 'worker') NOT NULL DEFAULT 'inspector',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 마스터 테넌트 생성/업데이트 (Raw SQL)
+    await sequelize.query(`
+      INSERT INTO tenants (tenant_id, tenant_name, tenant_type) 
+      VALUES ('master', 'Master Tenant', 'fulfillment')
+      ON DUPLICATE KEY UPDATE tenant_name='Master Tenant'
+    `);
+
+    // 기존 슈퍼 어드민 삭제 (있다면)
+    await sequelize.query(`
+      DELETE FROM users WHERE username = 'superadmin' AND tenant_id = 'master'
+    `);
 
     // 슈퍼 어드민 계정 생성
     const password = 'SuperAdmin2024!@#';
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const superAdmin = await User.create({
-      username: 'superadmin',
-      email: 'superadmin@ai003.com',
-      password: hashedPassword,
-      tenant_id: 'master',
-      company: 'AI_003 System',
-      role: 'super_admin',
-      createdAt: new Date(),
-      updatedAt: new Date()
+    await sequelize.query(`
+      INSERT INTO users (username, email, password, tenant_id, company, role)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, {
+      replacements: ['superadmin', 'superadmin@ai003.com', hashedPassword, 'master', 'AI_003 System', 'super_admin']
     });
 
     res.json({
