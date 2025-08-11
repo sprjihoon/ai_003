@@ -26,6 +26,24 @@
    return headers;
  };
 
+ // 안전한 JSON 파서: 빈 바디/비-JSON 응답에서 예외가 나지 않도록 한다
+ export const parseJsonSafe = async (response) => {
+   try {
+     const status = response.status;
+     if (status === 204 || status === 205) return null;
+     const contentType = response.headers.get('content-type') || '';
+     if (!contentType.toLowerCase().includes('application/json')) {
+       const text = await response.text().catch(() => '');
+       return text ? { message: text } : null;
+     }
+     const text = await response.text();
+     if (!text) return null;
+     return JSON.parse(text);
+   } catch (_) {
+     return null;
+   }
+ };
+
  export const fetchWithAuth = async (endpoint, options = {}) => {
    const url = endpoint.startsWith('/api')
      ? endpoint
@@ -48,14 +66,15 @@
 
    if (!response.ok) {
      let errorMsg = `HTTP ${response.status}`;
-     try {
-       const errJson = await response.json();
-       errorMsg = errJson.message || errorMsg;
-     } catch (_) {}
+     const errJson = await parseJsonSafe(response);
+     if (errJson && (errJson.message || errJson.error)) {
+       errorMsg = errJson.message || errJson.error;
+     }
      throw new Error(errorMsg);
    }
 
-   return response.json();
+   const data = await parseJsonSafe(response);
+   return data;
  };
 
  export const login = async (tenantId, username, password) => {
@@ -68,14 +87,17 @@
 
    if (!response.ok) {
      let errMsg = '로그인에 실패했습니다.';
-     try {
-       const errJson = await response.json();
-       errMsg = errJson.message || errMsg;
-     } catch (_) {}
+     const errJson = await parseJsonSafe(response);
+     if (errJson && (errJson.message || errJson.error)) {
+       errMsg = errJson.message || errJson.error;
+     }
      throw new Error(errMsg);
    }
 
-   const data = await response.json();
+   const data = await parseJsonSafe(response);
+   if (!data || !data.token || !data.user) {
+     throw new Error('로그인 응답이 올바르지 않습니다.');
+   }
    localStorage.setItem('token', data.token);
    localStorage.setItem('user', JSON.stringify(data.user));
    // 별도 저장 편의

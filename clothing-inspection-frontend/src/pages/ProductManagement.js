@@ -186,7 +186,13 @@ function ProductManagement() {
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (_){
+        const txt = await response.text();
+        data = txt ? { message: txt } : {};
+      }
       
       if (!response.ok) {
         throw new Error(data.message || '제품 등록에 실패했습니다.');
@@ -251,8 +257,15 @@ function ProductManagement() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         credentials: 'include',
+        body: form
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (_){
+        const txt = await res.text();
+        data = txt ? { message: txt } : {};
+      }
       alert(`${data.results.filter(r=>r.status==='ok').length} 건 성공 / ${data.results.filter(r=>r.status==='fail').length} 건 실패`);
       fetchProducts();
     } catch (err) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { keyframes } from '@emotion/react';
 import { Box, Typography, Grid, Card, CardContent, Divider, Paper } from '@mui/material';
-import { fetchWithAuth, API_BASE } from '../utils/api';
+import { fetchWithAuth, API_BASE, parseJsonSafe } from '../utils/api';
 
 // 전광판용 대시보드 – 클릭 요소 제거, 글자 크게
 const TvDashboard = () => {
@@ -51,10 +51,10 @@ const TvDashboard = () => {
       ]);
       if (!soundUrlRef.current) {
         fetch(`${API_BASE}/api/settings/ui`, { credentials:'include' })
-          .then(r=>r.json())
-          .then(d=>{
-            const mode = d.soundPlayMode||'random';
-            const list = (d.sounds||[]).map(u=>u.startsWith('/')?`${API_BASE}${u}`:u);
+          .then(async r=>{
+            const d = await parseJsonSafe(r);
+            const mode = (d && d.soundPlayMode) || 'random';
+            const list = ((d && d.sounds) || []).map(u=>u.startsWith('/')?`${API_BASE}${u}`:u);
             if(list.length===0) return;
             soundUrlRef.current={ mode, list, idx: {current:0} };
           });
@@ -94,9 +94,9 @@ const TvDashboard = () => {
   // startup sound
   useEffect(()=>{
     fetch(`${API_BASE}/api/settings/ui`,{credentials:'include'})
-      .then(r=>r.json())
-      .then(d=>{
-        if(d.startupSoundUrl){
+      .then(async r=>{
+        const d = await parseJsonSafe(r);
+        if(d && d.startupSoundUrl){
           const url=d.startupSoundUrl.startsWith('/')?`${API_BASE}${d.startupSoundUrl}`:d.startupSoundUrl;
           const audio=new Audio(url); audio.play().catch(()=>{});
         }
