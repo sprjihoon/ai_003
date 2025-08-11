@@ -15,7 +15,7 @@ import {
   IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { fetchWithAuth, API_BASE } from '../utils/api';
+import { fetchWithAuth, API_BASE, parseJsonSafe } from '../utils/api';
 
 // 단일 파일 업로드(전광판 시작 음악)
 const SettingSingleUpload = () => {
@@ -25,7 +25,12 @@ const SettingSingleUpload = () => {
   const [error,setError]=useState('');
 
   const load=()=>{
-    fetch(`${API_BASE}/api/settings/ui`,{credentials:'include'}).then(r=>r.json()).then(d=>setCurrentUrl(d.startupSoundUrl||'')).catch(()=>{});
+    fetch(`${API_BASE}/api/settings/ui`,{credentials:'include'})
+      .then(async r=>{
+        const d = await parseJsonSafe(r);
+        setCurrentUrl((d && d.startupSoundUrl) ? d.startupSoundUrl : '');
+      })
+      .catch(()=>{});
   };
   useEffect(load,[]);
 
@@ -77,10 +82,13 @@ const UiSettings = () => {
 
   const loadSounds = async () => {
     try {
-      const data = await fetchWithAuth('/settings/sounds'); // GET /api/settings/sounds
-      setSounds(data);
-      // also load soundPlayMode
-      fetch(`${API_BASE}/api/settings/ui`,{credentials:'include'}).then(r=>r.json()).then(d=>setPlayMode(d.soundPlayMode||'random')).catch(()=>{});
+      const data = await fetchWithAuth('/settings/sounds');
+      setSounds(data || []);
+      fetch(`${API_BASE}/api/settings/ui`,{credentials:'include'})
+        .then(async r=>{
+          const d = await parseJsonSafe(r);
+          setPlayMode((d && d.soundPlayMode) ? d.soundPlayMode : 'random');
+        }).catch(()=>{});
     } catch (err) {
       console.error(err);
       setError(err.message);

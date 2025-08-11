@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Paper, TextField, Button, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { login, API_BASE } from '../utils/api';
+import { login, API_BASE, parseJsonSafe } from '../utils/api';
 
 function Login() {
   const [tenantId, setTenantId] = useState('');
@@ -10,22 +10,18 @@ function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // 배경 이미지 적용
   useEffect(() => {
     let prevBg = '';
     const fetchUi = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/settings/ui`, { credentials: 'include' });
+        const res = await fetch('/api/settings/ui');
         if (!res.ok) {
           const text = await res.text();
           console.error('[UI settings] non-200 response', res.status, text);
           throw new Error(`settings/ui ${res.status}`);
         }
 
-        const d = await res.json().catch(() => {
-          console.error('[UI settings] JSON parse error');
-          return null;
-        });
+        const d = await parseJsonSafe(res);
         if (!d) return;
 
         if (d.loginBgUrl) {

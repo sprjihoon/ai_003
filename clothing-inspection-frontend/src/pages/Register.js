@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Paper, TextField, Button, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../utils/api';
+import { API_BASE, parseJsonSafe } from '../utils/api';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -40,8 +40,8 @@ function Register() {
         alert('회원가입이 완료되었습니다.');
         navigate('/');
       } else {
-        const data = await response.json();
-        setError(data.message);
+        const data = await parseJsonSafe(response);
+        setError((data && data.message) ? data.message : '회원가입에 실패했습니다.');
       }
     } catch (error) {
       setError('회원가입 중 오류가 발생했습니다.');

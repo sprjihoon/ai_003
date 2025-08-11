@@ -186,7 +186,13 @@ function ProductManagement() {
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (_){
+        const txt = await response.text();
+        data = txt ? { message: txt } : {};
+      }
       
       if (!response.ok) {
         throw new Error(data.message || '제품 등록에 실패했습니다.');
