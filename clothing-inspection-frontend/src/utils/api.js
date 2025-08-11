@@ -8,6 +8,13 @@
  export const API_BASE = process.env.REACT_APP_API_URL || 'https://ai-003-backend.onrender.com';
  export const API_URL = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : 'https://ai-003-backend.onrender.com/api';
 
+ const buildUrl = (endpoint) => {
+   if (endpoint.startsWith('http')) return endpoint;
+   // ensure leading slash
+   const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+   return `${API_BASE}${path}`;
+ };
+
  const buildHeaders = (method = 'GET', hasBody, extraHeaders = {}) => {
    const token = localStorage.getItem('token');
    const headers = {
@@ -45,9 +52,7 @@
  };
 
  export const fetchWithAuth = async (endpoint, options = {}) => {
-   const url = endpoint.startsWith('/api')
-     ? endpoint
-     : `/api${endpoint}`;
+   const url = buildUrl(endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`);
 
    const method = options.method || 'GET';
    const hasBody = !!options.body;
@@ -78,7 +83,7 @@
  };
 
  export const login = async (tenantId, username, password) => {
-   const response = await fetch('/api/users/login', {
+   const response = await fetch(buildUrl('/api/users/login'), {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
      // credentials: 'include', // Same-origin requests dont need this

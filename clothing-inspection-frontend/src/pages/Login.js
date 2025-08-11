@@ -14,7 +14,7 @@ function Login() {
     let prevBg = '';
     const fetchUi = async () => {
       try {
-        const res = await fetch('/api/settings/ui');
+        const res = await fetch(`${API_BASE}/api/settings/ui`);
         if (!res.ok) {
           const text = await res.text();
           console.error('[UI settings] non-200 response', res.status, text);
