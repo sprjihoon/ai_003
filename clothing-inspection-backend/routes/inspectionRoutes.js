@@ -349,7 +349,7 @@ router.patch('/receipt-photo/:photoId', auth, upload.single('file'), async (req,
 
     if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' });
 
-    await photo.update({ photoUrl: `/uploads/inspection_receipts/${req.file.filename}` });
+    await photo.update({ photoUrl: `/uploads/images/${req.file.filename}` });
 
     await logActivity(req, {
       inspectionId: inspection.id,

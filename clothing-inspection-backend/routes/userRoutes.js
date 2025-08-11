@@ -311,7 +311,8 @@ router.get('/history', auth, async (req,res)=>{
   });
 
   const list = rows.map(r=>{
-    const totalDetail = r.detail.reduce((t,d)=>t+d.totalQuantity,0);
+    const details = Array.isArray(r.detail) ? r.detail : (r.detail ? [r.detail] : []);
+    const totalDetail = details.reduce((t,d)=> t + (d.totalQuantity||0), 0);
     const my      = parseInt(r.get('myCount'),10);
     if (!r.Inspection) return;
     return {

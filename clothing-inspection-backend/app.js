@@ -56,12 +56,14 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 /*─────── HTTP → HTTPS 리디렉트 ───────*/
-app.use((req, res, next) => {
-  if (req.secure || req.get('x-forwarded-proto') === 'https') {
-    return next();
-  }
-  return res.redirect(301, `https://${req.headers.host}${req.originalUrl}`);
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.secure || req.get('x-forwarded-proto') === 'https') {
+      return next();
+    }
+    return res.redirect(301, `https://${req.headers.host}${req.originalUrl}`);
+  });
+}
 
 /*────────────── 미들웨어 ───────────────*/
 app.use(express.json());
