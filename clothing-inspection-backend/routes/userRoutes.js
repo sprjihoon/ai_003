@@ -104,12 +104,19 @@ router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { tenantId, username, password } = req.body;
 
-    if(!tenantId) return res.status(400).json({ message: 'tenantId is required' });
-
-    const user = await User.findOne({ where: { username, tenant_id: tenantId } });
+    // 사용자명을 기준으로 먼저 조회하여 슈퍼 어드민 계정은
+    // 테넌트 ID 없이도 로그인할 수 있도록 허용합니다.
+    const user = await User.findOne({ where: { username } });
 
     if (!user) {
       return res.status(401).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 일반 사용자는 tenantId가 필수이며, 계정의 tenant_id와 일치해야 합니다.
+    if (user.role !== 'super_admin') {
+      if (!tenantId || user.tenant_id !== tenantId) {
+        return res.status(401).json({ message: 'tenantId가 일치하지 않습니다.' });
+      }
     }
 
     // 비밀번호 검증
