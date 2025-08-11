@@ -257,8 +257,15 @@ function ProductManagement() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         credentials: 'include',
+        body: form
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (_){
+        const txt = await res.text();
+        data = txt ? { message: txt } : {};
+      }
       alert(`${data.results.filter(r=>r.status==='ok').length} 건 성공 / ${data.results.filter(r=>r.status==='fail').length} 건 실패`);
       fetchProducts();
     } catch (err) {
