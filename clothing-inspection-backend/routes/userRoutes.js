@@ -76,7 +76,7 @@ router.post('/register', auth, isAdmin, async (req, res) => {
     );
 
     // tenant type fetch
-    const tenantRow = await require('../models/Tenant').findOne({ where:{ tenant_id:user.tenant_id } });
+    const tenantRow = await require('../models/Tenant').findOne({ where:{ tenant_id:user.tenant_id } }).catch(()=>null);
 
     res.status(201).json({ 
       message: '사용자 등록이 완료되었습니다.',
@@ -132,7 +132,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    const tenantRow = await require('../models/Tenant').findOne({ where:{ tenant_id:user.tenant_id } });
+    const tenantRow = await require('../models/Tenant').findOne({ where:{ tenant_id:user.tenant_id } }).catch(()=>null);
 
     res.json({
       message: '로그인 성공',
