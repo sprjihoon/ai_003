@@ -307,8 +307,18 @@ router.post('/', auth, async (req, res) => {
       variants, // [{ size: 'S', color: '블랙', barcode: '123456' }, ...]
       wholesaler,
       wholesalerProductName,
-      location
+      location,
+      tenantId,
     } = req.body;
+
+    // determine tenant
+    let targetTenantId = req.user.tenant_id;
+    if(req.user.role === 'super_admin'){
+      targetTenantId = tenantId || req.user.tenant_id;
+    }
+    if(!targetTenantId){
+      return res.status(400).json({ message:'tenantId required' });
+    }
 
     // 제품 생성
     const product = await Product.create({
@@ -318,8 +328,8 @@ router.post('/', auth, async (req, res) => {
       color,
       wholesaler,
       wholesalerProductName,
-      location
-    }, { tenant_id: req.user.tenant_id });
+      location,
+    }, { tenant_id: targetTenantId });
 
     /*───────────────────────────────────────────
      * 1) 바코드 서버측 검증
