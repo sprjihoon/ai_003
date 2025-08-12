@@ -244,7 +244,8 @@ router.put('/:id', auth, async (req, res) => {
 // 모든 사용자 조회 (관리자용)
 router.get('/all', auth, isAdmin, async (req, res) => {
   try {
-    const users = await User.findAll({
+    const userQuery = req.user.role === 'super_admin' ? User.unscoped() : User;
+    const users = await userQuery.findAll({
       attributes: ['id', 'username', 'email', 'company', 'role', 'tenant_id', 'createdAt']
     });
     res.json(users);
