@@ -260,10 +260,14 @@ router.post('/tenants', auth, isSuperAdmin, async (req,res)=>{
 // 슈퍼 어드민 생성 엔드포인트 (보안을 위해 특별한 키 필요)
 router.post('/create-super-admin', async (req, res) => {
   try {
+    // 실행 가드: 운영에서 비활성화 가능
+    if (process.env.ENABLE_SUPERADMIN_SEED !== 'true') {
+      return res.status(403).json({ message: 'This endpoint is disabled' });
+    }
+
     const { secret } = req.body;
-    
-    // 보안키 확인 (환경변수 또는 하드코딩된 키)
-    if (secret !== 'CREATE_SUPER_ADMIN_2024') {
+    const expected = process.env.SUPERADMIN_SEED_SECRET || 'CREATE_SUPER_ADMIN_2024';
+    if (secret !== expected) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -383,5 +387,24 @@ router.delete('/tenants/:tenantId/full', auth, isSuperAdmin, async (req, res) =>
     res.status(500).json({ message: err.message });
   }
 }); 
+
+// ─────────────────────────────
+//  슈퍼어드민: 스키마 보정 (온라인 변경)
+//  POST /api/admin/schema/ensure-tenant-columns
+// ─────────────────────────────
+router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res)=>{
+  const sequelize = require('../config/database');
+  try{
+    // product_variants.tenant_id 없으면 추가
+    const [rows] = await sequelize.query("SHOW COLUMNS FROM product_variants LIKE 'tenant_id'");
+    if(!Array.isArray(rows) || rows.length===0){
+      await sequelize.query("ALTER TABLE product_variants ADD COLUMN tenant_id VARCHAR(64) NULL AFTER barcode");
+    }
+    res.json({ success:true });
+  }catch(err){
+    console.error('schema ensure error', err);
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router; 
