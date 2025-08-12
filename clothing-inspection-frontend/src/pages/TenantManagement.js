@@ -24,8 +24,6 @@ const TenantManagement = () => {
   const [tenantId, setTenantId] = useState('');
   const [tenantName, setTenantName] = useState('');
   const [tenantType, setTenantType] = useState('fulfillment');
-  const [operatorUsername, setOperatorUsername] = useState('');
-  const [operatorPassword, setOperatorPassword] = useState('');
 
   const load = async () => {
     const list = await fetchWithAuth('/admin/tenants');
@@ -41,12 +39,10 @@ const TenantManagement = () => {
     }
     await fetchWithAuth('/admin/tenants', {
       method: 'POST',
-      body: JSON.stringify({ tenantId, tenantName, tenantType, operatorUsername, operatorPassword })
+      body: JSON.stringify({ tenantId, tenantName, tenantType })
     });
     setTenantId('');
     setTenantName('');
-    setOperatorUsername('');
-    setOperatorPassword('');
     load();
   };
 
@@ -78,8 +74,6 @@ const TenantManagement = () => {
             <MenuItem value="brand">brand</MenuItem>
           </Select>
         </FormControl>
-        <TextField label="운영자 ID(optional)" value={operatorUsername} onChange={e => setOperatorUsername(e.target.value)} />
-        <TextField label="운영자 PW(optional)" type="password" value={operatorPassword} onChange={e => setOperatorPassword(e.target.value)} />
         <Button variant="contained" onClick={handleCreate}>추가</Button>
       </div>
 
