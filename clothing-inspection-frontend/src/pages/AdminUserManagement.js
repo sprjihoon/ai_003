@@ -10,7 +10,11 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  IconButton
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import { Edit, Save, Cancel, Refresh } from '@mui/icons-material';
 import { Delete } from '@mui/icons-material';
@@ -18,6 +22,7 @@ import { Delete } from '@mui/icons-material';
 const AdminUserManagement = () => {
   const [admins, setAdmins] = useState([]);
   const [tenantId, setTenantId] = useState('');
+  const [tenants,setTenants] = useState([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +38,14 @@ const AdminUserManagement = () => {
     setAdmins(all.filter(u => u.role === 'admin'));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load();
+    // fetch tenants for dropdown
+    (async()=>{
+      try{ const list = await fetchWithAuth('/admin/tenants'); setTenants(list);}catch{}}
+    )();
+  }, []);
+
+  const availableTenants = tenants.filter(t=> !admins.some(a=>a.tenant_id===t.tenant_id));
 
   const handleCreate = async () => {
     if (!tenantId || !username || !password) {
@@ -75,7 +87,12 @@ const AdminUserManagement = () => {
       <Typography variant="h5" gutterBottom>어드민 계정 관리</Typography>
 
       <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
-        <TextField label="tenantId" value={tenantId} onChange={e=>setTenantId(e.target.value)} />
+        <FormControl sx={{ minWidth: 160 }}>
+          <InputLabel id="tenant-label">tenantId</InputLabel>
+          <Select labelId="tenant-label" label="tenantId" value={tenantId} onChange={e=>setTenantId(e.target.value)}>
+             {availableTenants.map(t=>(<MenuItem key={t.tenant_id} value={t.tenant_id}>{t.tenant_id}</MenuItem>))}
+          </Select>
+        </FormControl>
         <TextField label="username" value={username} onChange={e=>setUsername(e.target.value)} />
         <TextField label="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
         <TextField label="email" value={email} onChange={e=>setEmail(e.target.value)} />
@@ -101,7 +118,9 @@ const AdminUserManagement = () => {
               <TableCell>{u.id}</TableCell>
               <TableCell>
                 {editId===u.id ? (
-                  <TextField value={editTenantId} onChange={e=>setEditTenantId(e.target.value)} />
+                  <Select value={editTenantId} onChange={e=>setEditTenantId(e.target.value)} sx={{minWidth:120}}>
+                    {tenants.map(t=>(<MenuItem key={t.tenant_id} value={t.tenant_id}>{t.tenant_id}</MenuItem>))}
+                  </Select>
                 ) : (u.tenant_id || '없음') }
               </TableCell>
               <TableCell>{u.username}</TableCell>
