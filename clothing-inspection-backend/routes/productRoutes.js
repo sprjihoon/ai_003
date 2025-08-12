@@ -196,7 +196,8 @@ router.get('/companies', auth, async (req, res) => {
       attributes: ['company'],
       where: {
         role: 'operator',
-        company: { [Op.not]: null } // null만 우선 제외
+        tenant_id: req.user.tenant_id,
+        company: { [Op.not]: null }
       }
     });
     
@@ -320,12 +321,25 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ message:'tenantId required' });
     }
 
+    // normalize size/color to JSON arrays if string provided
+    const normalizeCsv = (val) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (!trimmed) return [];
+        return trimmed.split(',').map(s=>s.trim()).filter(Boolean);
+      }
+      return [];
+    };
+    const sizeArr = normalizeCsv(size);
+    const colorArr = normalizeCsv(color);
+
     // 제품 생성
     const product = await Product.create({
       company,
       productName,
-      size,
-      color,
+      size: sizeArr,
+      color: colorArr,
       wholesaler,
       wholesalerProductName,
       location,
@@ -360,13 +374,10 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
-    if (variantRecords.length === 0) {
-      return res
-        .status(400)
-        .json({ message: '바코드를 최소 1개 이상 입력해야 합니다.' });
+    // 바코드가 없더라도 제품은 생성 허용
+    if (variantRecords.length > 0) {
+      await ProductVariant.bulkCreate(variantRecords, { tenant_id: targetTenantId });
     }
-
-    await ProductVariant.bulkCreate(variantRecords);
 
     // 생성된 제품과 바리에이션 정보 반환
     const createdProduct = await Product.findByPk(product.id, {

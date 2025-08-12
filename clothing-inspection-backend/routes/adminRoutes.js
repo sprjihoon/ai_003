@@ -214,7 +214,7 @@ router.put('/settings/email-from', auth, async (req,res)=>{
 // ────────────────────
 
 const isSuperAdmin = (req,res,next)=>{
-  if(req.user.role!=='admin' && req.user.role!=='super_admin'){
+  if(req.user.role!=='super_admin'){
     return res.status(403).json({ message:'슈퍼어드민 권한이 필요합니다.'});
   }
   return next();
