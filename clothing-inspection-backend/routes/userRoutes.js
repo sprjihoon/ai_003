@@ -52,7 +52,12 @@ router.get('/', async (req, res) => {
 // Create new user
 router.post('/register', auth, isAdmin, async (req, res) => {
   try {
-    const { tenantId, username, email, password, company, role } = req.body;
+    let { tenantId, username, email, password, company, role } = req.body;
+
+    // super_admin만 임의 tenantId 지정 가능. 그 외는 자신의 tenant_id 고정
+    if(req.user.role !== 'super_admin'){
+      tenantId = req.user.tenant_id;
+    }
 
     if(!tenantId) return res.status(400).json({ message: 'tenantId is required' });
 
@@ -244,10 +249,17 @@ router.put('/:id', auth, async (req, res) => {
 // 모든 사용자 조회 (관리자용)
 router.get('/all', auth, isAdmin, async (req, res) => {
   try {
-    const userQuery = req.user.role === 'super_admin' ? User.unscoped() : User;
-    const users = await userQuery.findAll({
-      attributes: ['id', 'username', 'email', 'company', 'role', 'tenant_id', 'createdAt']
-    });
+    let users;
+    if(req.user.role === 'super_admin'){
+      users = await User.unscoped().findAll({
+        attributes:['id','username','email','company','role','tenant_id','createdAt']
+      });
+    }else{
+      users = await User.findAll({
+        where:{ tenant_id:req.user.tenant_id },
+        attributes:['id','username','email','company','role','tenant_id','createdAt']
+      });
+    }
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });

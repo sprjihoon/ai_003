@@ -46,9 +46,10 @@ const AdminUserManagement = () => {
   }, []);
 
   const availableTenants = tenants.filter(t=> !admins.some(a=>a.tenant_id===t.tenant_id));
+  const userInfo = JSON.parse(localStorage.getItem('user')||'{}');
 
   const handleCreate = async () => {
-    if (!tenantId || !username || !password) {
+    if (userInfo.role==='super_admin' && !tenantId) {
       alert('tenantId, username, password 필수');
       return;
     }
@@ -87,12 +88,14 @@ const AdminUserManagement = () => {
       <Typography variant="h5" gutterBottom>어드민 계정 관리</Typography>
 
       <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
-        <FormControl sx={{ minWidth: 160 }}>
-          <InputLabel id="tenant-label">tenantId</InputLabel>
-          <Select labelId="tenant-label" label="tenantId" value={tenantId} onChange={e=>setTenantId(e.target.value)}>
-             {availableTenants.map(t=>(<MenuItem key={t.tenant_id} value={t.tenant_id}>{t.tenant_id}</MenuItem>))}
-          </Select>
-        </FormControl>
+        {userInfo.role==='super_admin' ? (
+          <FormControl sx={{ minWidth: 160 }}>
+            <InputLabel id="tenant-label">tenantId</InputLabel>
+            <Select labelId="tenant-label" label="tenantId" value={tenantId} onChange={e=>setTenantId(e.target.value)}>
+              {availableTenants.map(t=>(<MenuItem key={t.tenant_id} value={t.tenant_id}>{t.tenant_id}</MenuItem>))}
+            </Select>
+          </FormControl>
+        ) : null }
         <TextField label="username" value={username} onChange={e=>setUsername(e.target.value)} />
         <TextField label="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
         <TextField label="email" value={email} onChange={e=>setEmail(e.target.value)} />
