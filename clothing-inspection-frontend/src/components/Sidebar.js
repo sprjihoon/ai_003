@@ -29,7 +29,6 @@ const Sidebar = () => {
   const items = [
     { key:'workerDash', label:'작업 대시보드', icon:<ListAltIcon />, to:'/worker/dashboard', roles:['worker','inspector','admin','operator'] },
     { key:'adminDash', label:'대시보드', icon:<DashboardIcon />, to:'/dashboard', roles:['admin','operator'] },
-    { key:'brandsMgmt', label:'브랜드 관리', icon:<InventoryIcon />, to:'/brands', roles:['operator','admin'] },
     { key:'workersStats', label:'작업자 통계', icon:<AssessmentIcon />, to:'/workers/stats', roles:['admin','inspector','operator'] },
     { key:'clothes', label:'의류목록', icon:<LocalShippingIcon />, to:'/clothes', roles:['inspector','operator','admin'] },
     { key:'inspections', label:'검수내역', icon:<AssessmentIcon />, to:'/inspections', roles:['inspector','operator','admin'] },
