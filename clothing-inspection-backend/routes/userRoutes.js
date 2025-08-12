@@ -192,7 +192,7 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     }
 
-    const { username, email, company, role, password } = req.body;
+    const { username, email, company, role, password, tenantId:newTenantId } = req.body;
     
     // 중복 체크
     if (username !== user.username) {
@@ -210,6 +210,12 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const updateData = { username, email, company, role };
+
+    // tenant_id 변경은 관리자/슈퍼어드민만 가능
+    if (newTenantId && ['admin','super_admin'].includes(req.user.role)) {
+      updateData.tenant_id = newTenantId;
+    }
+
     // 관리자(슈퍼어드민 포함)만 다른 사용자의 role / password 변경 허용
     if (password && ['admin','super_admin'].includes(req.user.role)) {
       const hashedPassword = await bcrypt.hash(password, 10);

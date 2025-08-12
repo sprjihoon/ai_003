@@ -25,6 +25,7 @@ const AdminUserManagement = () => {
   const [editId, setEditId] = useState(null);
   const [editEmail, setEditEmail] = useState('');
   const [editCompany, setEditCompany] = useState('');
+  const [editTenantId, setEditTenantId] = useState('');
 
   const load = async () => {
     const all = await fetchWithAuth('/users/all');
@@ -50,12 +51,13 @@ const AdminUserManagement = () => {
     setEditId(u.id);
     setEditEmail(u.email || '');
     setEditCompany(u.company || '');
+    setEditTenantId(u.tenant_id || '');
   };
 
   const handleUpdate = async () => {
     await fetchWithAuth(`/users/${editId}`, {
       method: 'PUT',
-      body: JSON.stringify({ email: editEmail, company: editCompany })
+      body: JSON.stringify({ email: editEmail, company: editCompany, tenantId: editTenantId })
     });
     setEditId(null);
     load();
@@ -90,7 +92,11 @@ const AdminUserManagement = () => {
           {admins.map(u => (
             <TableRow key={u.id}>
               <TableCell>{u.id}</TableCell>
-              <TableCell>{u.tenant_id}</TableCell>
+              <TableCell>
+                {editId===u.id ? (
+                  <TextField value={editTenantId} onChange={e=>setEditTenantId(e.target.value)} />
+                ) : (u.tenant_id || '없음') }
+              </TableCell>
               <TableCell>{u.username}</TableCell>
               <TableCell>
                 {editId===u.id ? (
