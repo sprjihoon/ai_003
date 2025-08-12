@@ -1,4 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
+  const { addTenantHooks } = require('../utils/multitenancyHooks');
+
   const ProductVariant = sequelize.define('ProductVariant', {
     productId: {
       type: DataTypes.INTEGER,
@@ -14,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
+    },
+    tenant_id: {
+      type: DataTypes.STRING(64),
+      allowNull: true
     }
   }, {
     tableName: 'product_variants',
@@ -28,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       constraints: false
     });
   };
+
+  addTenantHooks(ProductVariant);
 
   return ProductVariant;
 };

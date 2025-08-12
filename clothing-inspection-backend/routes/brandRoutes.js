@@ -14,9 +14,8 @@ const canManage = (req,res,next)=>{
 // 목록
 router.get('/', auth, async (req,res)=>{
   const list = await Brand.findAll({
-    where:{},
-    order:[['createdAt','DESC']],
-    tenant_id: req.user.tenant_id
+    where:{ tenant_id: req.user.tenant_id },
+    order:[['createdAt','DESC']]
   });
   res.json(list);
 });
@@ -24,9 +23,10 @@ router.get('/', auth, async (req,res)=>{
 // 생성
 router.post('/', auth, canManage, async (req,res)=>{
   try{
-    const { name, code } = req.body;
+    const { name, code, tenantId } = req.body;
     if(!name || !code) return res.status(400).json({ message:'name, code required' });
-    const row = await Brand.create({ name, code }, { tenant_id: req.user.tenant_id });
+    const targetTenantId = req.user.role==='super_admin' ? (tenantId || req.user.tenant_id) : req.user.tenant_id;
+    const row = await Brand.create({ name, code }, { tenant_id: targetTenantId });
     res.status(201).json(row);
   }catch(err){
     if(err.name==='SequelizeUniqueConstraintError'){
@@ -40,7 +40,7 @@ router.post('/', auth, canManage, async (req,res)=>{
 // 수정
 router.put('/:id', auth, canManage, async (req,res)=>{
   try{
-    const brand = await Brand.findOne({ where:{ id:req.params.id }, tenant_id:req.user.tenant_id });
+    const brand = await Brand.findOne({ where:{ id:req.params.id, tenant_id:req.user.tenant_id } });
     if(!brand) return res.status(404).json({ message:'Brand not found' });
     const { name, code } = req.body;
     await brand.update({ name, code });
@@ -54,7 +54,7 @@ router.put('/:id', auth, canManage, async (req,res)=>{
 // 삭제
 router.delete('/:id', auth, canManage, async (req,res)=>{
   try{
-    const brand = await Brand.findOne({ where:{ id:req.params.id }, tenant_id:req.user.tenant_id });
+    const brand = await Brand.findOne({ where:{ id:req.params.id, tenant_id:req.user.tenant_id } });
     if(!brand) return res.status(404).json({ message:'Brand not found' });
     await brand.destroy();
     res.json({ success:true });
