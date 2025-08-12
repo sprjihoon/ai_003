@@ -14,7 +14,10 @@ const bcrypt = require('bcrypt');
 // 관리자 통계 (기간 필터)
 router.get('/stats/overview', auth, async (req, res) => {
   try {
-    if (req.user.role !== 'admin') {
+    // 기존: if (req.user.role !== 'admin') {
+    // 수정: admin 과 super_admin 허용
+    const hasAdminRole = ['admin','super_admin'].includes(req.user.role);
+    if (!hasAdminRole) {
       return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
     }
     const { start, end } = req.query;
@@ -110,7 +113,8 @@ router.get('/stats/overview', auth, async (req, res) => {
 // ===== 활동 로그 =====
 router.get('/activity', auth, async (req, res)=>{
   try{
-    if(req.user.role!=='admin') return res.status(403).json({ message:'관리자 권한 필요' });
+    const hasAdminRole = ['admin','super_admin'].includes(req.user.role);
+    if(!hasAdminRole) return res.status(403).json({ message:'관리자 권한 필요' });
     let { start, end, date, level } = req.query;
 
     // date 파라미터가 있으면 동일한 날짜로 start/end 설정
@@ -162,7 +166,8 @@ router.get('/activity', auth, async (req, res)=>{
 // ===== 미확정·작업 지연 전표 =====
 router.get('/alerts', auth, async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.status(403).json({ message:'관리자 권한 필요' });
+    const hasAdminRole = ['admin','super_admin'].includes(req.user.role);
+    if(!hasAdminRole) return res.status(403).json({ message:'관리자 권한 필요' });
     const delayDays = parseInt(req.query.delayDays||2,10); // 기본 2일
     const delayDate = new Date(Date.now() - delayDays*24*60*60*1000);
 
@@ -177,7 +182,8 @@ router.get('/alerts', auth, async (req,res)=>{
 
 // ===== 시스템 설정: 이메일 From =====
 router.get('/settings/email-from', auth, async (req,res)=>{
-  if(req.user.role!=='admin') return res.status(403).json({ message:'관리자 권한 필요' });
+  const hasAdminRole = ['admin','super_admin'].includes(req.user.role);
+  if(!hasAdminRole) return res.status(403).json({ message:'관리자 권한 필요' });
   try{
     const val = await getSetting('emailFrom');
     res.json({ emailFrom: val });
@@ -185,7 +191,8 @@ router.get('/settings/email-from', auth, async (req,res)=>{
 });
 
 router.put('/settings/email-from', auth, async (req,res)=>{
-  if(req.user.role!=='admin') return res.status(403).json({ message:'관리자 권한 필요' });
+  const hasAdminRole = ['admin','super_admin'].includes(req.user.role);
+  if(!hasAdminRole) return res.status(403).json({ message:'관리자 권한 필요' });
   const { emailFrom } = req.body;
   if(!emailFrom) return res.status(400).json({ message:'emailFrom required' });
   try{
