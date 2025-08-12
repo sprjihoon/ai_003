@@ -146,8 +146,12 @@ const AdminUserManagement = () => {
                   </>
                 ) : (
                   <>
-                    <IconButton onClick={()=>startEdit(u)}><Edit /></IconButton>
-                    <IconButton onClick={()=>handleDelete(u.id)}><Delete /></IconButton>
+                    {u.id!==userInfo.id && (
+                      <IconButton onClick={()=>startEdit(u)}><Edit /></IconButton>
+                    )}
+                    {u.id!==userInfo.id && (
+                      <IconButton onClick={()=>handleDelete(u.id)}><Delete /></IconButton>
+                    )}
                   </>
                 )}
               </TableCell>
