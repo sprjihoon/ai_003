@@ -55,7 +55,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
 // DELETE /api/settings/upload/:type  (admin only)
 router.delete('/upload/:type', auth, async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.sendStatus(403);
+    if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
     const type=req.params.type;
     const key = type==='sound' ? 'completeSoundUrl'
               : type==='loginBg' ? 'loginBgUrl' : null;
@@ -68,7 +68,7 @@ router.delete('/upload/:type', auth, async (req,res)=>{
 // POST /api/settings/sounds  (upload complete sound)
 router.post('/sounds', auth, upload.single('file'), async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.sendStatus(403);
+    if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
     if(!req.file) return res.status(400).json({ message:'file required' });
     const relUrl = `/uploads/settings/${req.file.filename}`;
     const max = await CompleteSound.max('order');
@@ -80,7 +80,7 @@ router.post('/sounds', auth, upload.single('file'), async (req,res)=>{
 
 // GET list
 router.get('/sounds', auth, async (req,res)=>{
-  if(req.user.role!=='admin') return res.sendStatus(403);
+  if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
   const list = await CompleteSound.findAll({ order:[['order','ASC']] });
   res.json(list);
 });
@@ -88,7 +88,7 @@ router.get('/sounds', auth, async (req,res)=>{
 // PUT /api/settings/sounds/order   { order:[id1,id2,...] }
 router.put('/sounds/order', auth, async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.sendStatus(403);
+    if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
     const { order } = req.body;
     if(!Array.isArray(order)) return res.status(400).json({ message:'order array required' });
     // transaction update
@@ -104,7 +104,7 @@ router.put('/sounds/order', auth, async (req,res)=>{
 // DELETE sound by id
 router.delete('/sounds/:id', auth, async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.sendStatus(403);
+    if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
     const row = await CompleteSound.findByPk(req.params.id);
     if(!row) return res.sendStatus(404);
     await row.destroy();
@@ -152,7 +152,7 @@ router.get('/ui', async (_req,res)=>{
 // PUT /api/settings/sound-mode { mode: 'sequential'|'random' }
 router.put('/sound-mode', auth, async (req,res)=>{
   try{
-    if(req.user.role!=='admin') return res.sendStatus(403);
+    if(!['admin','super_admin'].includes(req.user.role)) return res.sendStatus(403);
     const { mode }=req.body;
     if(!['sequential','random'].includes(mode)) return res.status(400).json({ message:'invalid mode'});
     await setSetting('soundPlayMode', mode);
