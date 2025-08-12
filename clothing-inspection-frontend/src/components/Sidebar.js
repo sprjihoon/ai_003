@@ -38,7 +38,10 @@ const Sidebar = () => {
     { key:'history', label:'작업내역', icon:<ListAltIcon />, to:'/worker/history', roles:['worker','inspector','admin'] },
     { key:'password', label:'비밀번호 변경', icon:<SettingsIcon />, to:'/change-password', roles:['worker','inspector','operator','admin'] },
     { key:'users', label:'사용자 관리', icon:<PeopleIcon />, to:'/users', roles:['admin','operator'] },
-    { key:'uiSettings', label:'환경 설정', icon:<SettingsIcon />, to:'/settings/ui', roles:['admin','operator'] },
+    { key:'uiSettings', label:'환경 설정', icon:<SettingsIcon />, to:'/settings/ui', roles:['admin','operator','super_admin'] },
+    // ──────────────  슈퍼어드민 전용  ──────────────
+    { key:'tenantMgmt', label:'테넌트 관리', icon:<InventoryIcon />, to:'/super/tenants', roles:['super_admin'] },
+    { key:'adminAccounts', label:'어드민 계정', icon:<PeopleIcon />, to:'/super/admin-users', roles:['super_admin'] },
   ];
 
   // tenant_type 기반 필터: fulfillment ➔ 브랜드 관리 메뉴 추가, brand ➔ 제거

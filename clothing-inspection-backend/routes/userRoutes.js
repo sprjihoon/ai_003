@@ -15,11 +15,11 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// 관리자 권한 확인 미들웨어
+// 관리자(또는 슈퍼어드민) 권한 확인 미들웨어
 const isAdmin = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id);
-    if (user.role !== 'admin') {
+    if (!['admin', 'super_admin'].includes(user.role)) {
       return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
     }
     next();
@@ -210,8 +210,8 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const updateData = { username, email, company, role };
-    // 관리자만 다른 사용자의 role / password 변경 허용
-    if (password && req.user.role === 'admin') {
+    // 관리자(슈퍼어드민 포함)만 다른 사용자의 role / password 변경 허용
+    if (password && ['admin','super_admin'].includes(req.user.role)) {
       const hashedPassword = await bcrypt.hash(password, 10);
       updateData.password = hashedPassword;
     }

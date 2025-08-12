@@ -29,12 +29,14 @@ import ErrorBoundary from './components/ErrorBoundary';
 import TvDashboard from './pages/TvDashboard';
 import UiSettings from './pages/UiSettings';
 import BrandManagement from './pages/BrandManagement';
+import TenantManagement from './pages/TenantManagement';
+import AdminUserManagement from './pages/AdminUserManagement';
 
 // 관리자 권한 확인 컴포넌트
 const AdminRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const role = (user.role || '').toLowerCase();
-  return ['admin','operator'].includes(role) ? children : <Navigate to="/dashboard" />;
+  return ['admin','operator','super_admin'].includes(role) ? children : <Navigate to="/dashboard" />;
 };
 
 // Protected route for workers & inspectors (access: 'worker', 'inspector', 'admin')
@@ -49,6 +51,13 @@ const AdminOrInspectorRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const role = (user.role || '').toLowerCase();
   return user && (role==='admin' || role==='inspector') ? children : <Navigate to="/dashboard" />;
+};
+
+// 슈퍼어드민 전용 라우트
+const SuperAdminRoute = ({ children }) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const role = (user.role || '').toLowerCase();
+  return role==='super_admin' ? children : <Navigate to="/dashboard" />;
 };
 
 const DisplayRoute = ({ children }) => {
@@ -228,6 +237,26 @@ function App() {
                     <AdminRoute>
                       <UiSettings />
                     </AdminRoute>
+                  </Layout>
+                }
+              />
+              <Route
+                path="/super/tenants"
+                element={
+                  <Layout>
+                    <SuperAdminRoute>
+                      <TenantManagement />
+                    </SuperAdminRoute>
+                  </Layout>
+                }
+              />
+              <Route
+                path="/super/admin-users"
+                element={
+                  <Layout>
+                    <SuperAdminRoute>
+                      <AdminUserManagement />
+                    </SuperAdminRoute>
                   </Layout>
                 }
               />
