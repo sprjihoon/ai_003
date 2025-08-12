@@ -105,6 +105,14 @@ router.get('/stats/overview', auth, async (req, res) => {
       }
     });
   } catch (err) {
+    if (err.name === 'SequelizeDatabaseError' && /doesn\'t exist/i.test(err.message)) {
+      console.warn('⚠️ admin overview skipped – missing tables:', err.message);
+      return res.json({
+        wholesalerStats: [],
+        operatorStats: [],
+        summary: { totalSkus: 0, workerCount: 0, inspectorCount: 0, operatorCount: 0 }
+      });
+    }
     console.error('admin overview error', err);
     res.status(500).json({ message: err.message });
   }
