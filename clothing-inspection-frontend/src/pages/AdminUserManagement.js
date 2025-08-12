@@ -13,6 +13,7 @@ import {
   IconButton
 } from '@mui/material';
 import { Edit, Save, Cancel, Refresh } from '@mui/icons-material';
+import { Delete } from '@mui/icons-material';
 
 const AdminUserManagement = () => {
   const [admins, setAdmins] = useState([]);
@@ -44,6 +45,12 @@ const AdminUserManagement = () => {
       body: JSON.stringify({ tenantId, username, password, email, company, role: 'admin' })
     });
     setTenantId(''); setUsername(''); setPassword(''); setEmail(''); setCompany('');
+    load();
+  };
+
+  const handleDelete = async (id)=>{
+    if(!window.confirm('삭제하시겠습니까?')) return;
+    await fetchWithAuth(`/users/${id}`, { method:'DELETE' });
     load();
   };
 
@@ -116,7 +123,10 @@ const AdminUserManagement = () => {
                     <IconButton onClick={()=>setEditId(null)}><Cancel /></IconButton>
                   </>
                 ) : (
-                  <IconButton onClick={()=>startEdit(u)}><Edit /></IconButton>
+                  <>
+                    <IconButton onClick={()=>startEdit(u)}><Edit /></IconButton>
+                    <IconButton onClick={()=>handleDelete(u.id)}><Delete /></IconButton>
+                  </>
                 )}
               </TableCell>
             </TableRow>

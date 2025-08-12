@@ -245,7 +245,7 @@ router.put('/:id', auth, async (req, res) => {
 router.get('/all', auth, isAdmin, async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ['id', 'username', 'email', 'company', 'role', 'createdAt']
+      attributes: ['id', 'username', 'email', 'company', 'role', 'tenant_id', 'createdAt']
     });
     res.json(users);
   } catch (error) {

@@ -17,6 +17,7 @@ import {
   InputLabel
 } from '@mui/material';
 import { Refresh } from '@mui/icons-material';
+import { DeleteForever } from '@mui/icons-material';
 
 const TenantManagement = () => {
   const [tenants, setTenants] = useState([]);
@@ -46,6 +47,14 @@ const TenantManagement = () => {
     setTenantName('');
     setOperatorUsername('');
     setOperatorPassword('');
+    load();
+  };
+
+  // 테넌트 전체 삭제 (account + data)
+  const handleCascadeDelete = async (tid)=>{
+    if(!window.confirm(`테넌트 ${tid} 와 관련된 모든 데이터가 삭제됩니다. 계속할까요?`)) return;
+    if(!window.confirm('정말로 삭제하시겠습니까? (복구 불가)')) return;
+    await fetchWithAuth(`/admin/tenants/${tid}/full`, { method:'DELETE' });
     load();
   };
 
@@ -83,6 +92,7 @@ const TenantManagement = () => {
             <TableCell>tenant_name</TableCell>
             <TableCell>type</TableCell>
             <TableCell>createdAt</TableCell>
+            <TableCell>삭제</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -93,6 +103,11 @@ const TenantManagement = () => {
               <TableCell>{t.tenant_name}</TableCell>
               <TableCell>{t.tenant_type}</TableCell>
               <TableCell>{new Date(t.createdAt).toLocaleString()}</TableCell>
+              <TableCell>
+                <IconButton color="error" onClick={()=>handleCascadeDelete(t.tenant_id)}>
+                  <DeleteForever />
+                </IconButton>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

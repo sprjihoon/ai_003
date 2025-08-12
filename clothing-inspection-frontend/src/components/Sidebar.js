@@ -36,7 +36,7 @@ const Sidebar = () => {
     { key:'defects', label:'불량 내역', icon:<AssessmentIcon />, to:'/defects', roles:['operator','inspector','admin'] },
     { key:'scan', label:'바코드스캔', icon:<QrCodeScannerIcon />, to:'/worker/scan', roles:['worker','inspector','admin'] },
     { key:'history', label:'작업내역', icon:<ListAltIcon />, to:'/worker/history', roles:['worker','inspector','admin'] },
-    { key:'password', label:'비밀번호 변경', icon:<SettingsIcon />, to:'/change-password', roles:['worker','inspector','operator','admin'] },
+    { key:'password', label:'비밀번호 변경', icon:<SettingsIcon />, to:'/change-password', roles:['worker','inspector','operator','admin','super_admin'] },
     { key:'users', label:'사용자 관리', icon:<PeopleIcon />, to:'/users', roles:['admin','operator'] },
     { key:'uiSettings', label:'환경 설정', icon:<SettingsIcon />, to:'/settings/ui', roles:['admin','operator','super_admin'] },
     // ──────────────  슈퍼어드민 전용  ──────────────

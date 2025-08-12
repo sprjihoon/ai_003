@@ -344,4 +344,44 @@ router.post('/create-super-admin', async (req, res) => {
   }
 });
 
+// ─────────────────────────────
+//  슈퍼어드민: 테넌트 전체 삭제
+//  DELETE /api/admin/tenants/:tenantId/full
+// ─────────────────────────────
+
+router.delete('/tenants/:tenantId/full', auth, isSuperAdmin, async (req, res) => {
+  const { tenantId } = req.params;
+  const sequelize = require('../config/database');
+
+  const tables = [
+    'inspection_details',
+    'inspections',
+    'product_variants',
+    'products',
+    'users'
+  ];
+
+  const t = await sequelize.transaction();
+  try {
+    for (const tbl of tables) {
+      await sequelize.query(`DELETE FROM ${tbl} WHERE tenant_id = ?`, {
+        replacements: [tenantId],
+        transaction: t
+      });
+    }
+
+    await sequelize.query('DELETE FROM tenants WHERE tenant_id = ?', {
+      replacements: [tenantId],
+      transaction: t
+    });
+
+    await t.commit();
+    res.json({ success: true });
+  } catch (err) {
+    await t.rollback();
+    console.error('tenant cascade delete error', err);
+    res.status(500).json({ message: err.message });
+  }
+}); 
+
 module.exports = router; 
