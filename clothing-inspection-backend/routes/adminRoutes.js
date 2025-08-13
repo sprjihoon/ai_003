@@ -450,6 +450,10 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 			await ensureColumn('inspection_receipt_photos', 'uploadedAt', "uploadedAt DATETIME NULL DEFAULT CURRENT_TIMESTAMP AFTER photoUrl");
 		}
 
+		// inspection_details 누락 컬럼 보강
+		await ensureColumn('inspection_details', 'normalQuantity', "normalQuantity INT NULL AFTER totalQuantity");
+		await ensureColumn('inspection_details', 'defectQuantity', "defectQuantity INT NULL AFTER normalQuantity");
+
 		res.json({ success:true });
 	}catch(err){
 		console.error('schema ensure error', err);
