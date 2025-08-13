@@ -177,13 +177,22 @@ function ProductManagement() {
         ? `${API_BASE}/api/products/${editingProduct.id}`
         : `${API_BASE}/api/products`;
       
+      // super_admin 인 경우에만 tenantId 전달
+      let payload = { ...formData };
+      try {
+        const me = JSON.parse(localStorage.getItem('me') || '{}');
+        if (me?.role === 'super_admin' && me?.tenant_id) {
+          payload.tenantId = me.tenant_id;
+        }
+      } catch (_) {}
+
       const response = await fetch(url, {
         method: editingProduct ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       let data;
@@ -532,28 +541,31 @@ function ProductManagement() {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
-                  바코드 입력
-                </Typography>
-                <Grid container spacing={2}>
-                  {formData.variants.map((variant, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {(()=>{
-                          const parts=[variant.size, variant.color, variant.extraOption].filter(Boolean);
-                          return `${formData.productName||''} ${parts.join(' / ')}`.trim();
-                        })()}
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        label="바코드"
-                        value={variant.barcode}
-                        onChange={(e) => handleVariantBarcodeChange(index, e.target.value)}
-                        required
-                      />
+                {formData.variants.length > 0 && (
+                  <>
+                    <Typography variant="h6" gutterBottom>
+                      바코드 입력
+                    </Typography>
+                    <Grid container spacing={2}>
+                      {formData.variants.map((variant, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            {(()=>{
+                              const parts=[variant.size, variant.color, variant.extraOption].filter(Boolean);
+                              return `${formData.productName||''} ${parts.join(' / ')}`.trim();
+                            })()}
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            label="바코드"
+                            value={variant.barcode}
+                            onChange={(e) => handleVariantBarcodeChange(index, e.target.value)}
+                          />
+                        </Grid>
+                      ))}
                     </Grid>
-                  ))}
-                </Grid>
+                  </>
+                )}
               </Grid>
             </Grid>
           </DialogContent>

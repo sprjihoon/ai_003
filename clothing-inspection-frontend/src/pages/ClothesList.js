@@ -44,6 +44,7 @@ function ClothesList() {
     productName: '',
     size: '',
     color: '',
+    extraOption: '',
     wholesaler: '',
     wholesalerProductName: '',
     location: '',
@@ -72,8 +73,6 @@ function ClothesList() {
       formData.wholesalerProductName
     ];
     if(required.some(f=>!f || !f.toString().trim())) return false;
-    if(formData.variants.length===0) return false;
-    if(formData.variants.some(v=>!v.barcode || !v.barcode.trim())) return false;
     return true;
   }, [formData]);
 
@@ -107,7 +106,16 @@ function ClothesList() {
       const url = (editingProduct && editingProduct.id)
         ? `${API_BASE}/api/products/${editingProduct.id}`
         : `${API_BASE}/api/products`;
-      
+
+      // super_admin 인 경우에만 tenantId 전달 (백엔드에서 유효성 검사함)
+      let payload = { ...formData };
+      try {
+        const me = JSON.parse(localStorage.getItem('me') || '{}');
+        if (me?.role === 'super_admin' && me?.tenant_id) {
+          payload.tenantId = me.tenant_id;
+        }
+      } catch (_) {}
+
       const response = await fetch(url, {
         method: editingProduct ? 'PUT' : 'POST',
         headers: {
@@ -115,7 +123,7 @@ function ClothesList() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         credentials: 'include',
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       let data;
@@ -138,6 +146,7 @@ function ClothesList() {
         productName: '',
         size: '',
         color: '',
+        extraOption: '',
         wholesaler: '',
         wholesalerProductName: '',
         location: '',
@@ -186,15 +195,16 @@ function ClothesList() {
         productName: fullProd.productName,
         size: Array.isArray(fullProd.size) ? fullProd.size.join(',') : (fullProd.size || ''),
         color: Array.isArray(fullProd.color) ? fullProd.color.join(',') : (fullProd.color || ''),
+        extraOption: '',
         wholesaler: fullProd.wholesaler,
         wholesalerProductName: fullProd.wholesalerProductName,
         location: fullProd.location,
-        variants: fullProd.ProductVariants?fullProd.ProductVariants.map(v=>({size:v.size,color:v.color,barcode:v.barcode})):[]
+        variants: fullProd.ProductVariants?fullProd.ProductVariants.map(v=>({size:v.size,color:v.color,extraOption:v.extraOption,barcode:v.barcode})):[]
       });
     }else{
       setEditingProduct(null);
       setFormData({
-        company:'',productName:'',size:'',color:'',wholesaler:'',wholesalerProductName:'',location:'',variants:[]
+        company:'',productName:'',size:'',color:'',extraOption:'',wholesaler:'',wholesalerProductName:'',location:'',variants:[]
       });
     }
     setOpenDialog(true);
@@ -208,20 +218,35 @@ function ClothesList() {
   const handleInputChange=(e)=>{
     const {name,value}=e.target;
     setFormData(prev=>({...prev,[name]:value}));
+  };
 
-    if(name==='size'||name==='color'){
-      const sizesArr=(name==='size'?value:formData.size).split(',').map(s=>s.trim()).filter(Boolean);
-      const colorsArr=(name==='color'?value:formData.color).split(',').map(c=>c.trim()).filter(Boolean);
-      const newVars=[];
-      for(const s of sizesArr){
-        for(const c of colorsArr){
-          const existing=formData.variants.find(v=>v.size===s&&v.color===c);
-          newVars.push({size:s,color:c,barcode:existing?existing.barcode:''});
+  // Generate variants whenever size/color/extraOption changes
+  const computeVariants = (sizeStr, colorStr, optionStr, prevVariants=[]) => {
+    if(!sizeStr.trim() && !colorStr.trim() && !optionStr.trim()) return [];
+    const sizesArr = sizeStr.split(',').map(s=>s.trim()).filter(Boolean);
+    const colorsArr = colorStr.split(',').map(c=>c.trim()).filter(Boolean);
+    const optsArr  = optionStr.split(',').map(o=>o.trim()).filter(Boolean);
+    const effSizes = sizesArr.length ? sizesArr : [null];
+    const effColors = colorsArr.length ? colorsArr : [null];
+    const effOpts = optsArr.length ? optsArr : [null];
+    const combined = [];
+    for(const s of effSizes){
+      for(const c of effColors){
+        for(const o of effOpts){
+          const existing = prevVariants.find(v=>v.size===s&&v.color===c&&v.extraOption===o);
+          combined.push({ size:s, color:c, extraOption:o, barcode: existing?existing.barcode:'' });
         }
       }
-      setFormData(prev=>({...prev,variants:newVars}));
     }
+    return combined;
   };
+
+  useEffect(()=>{
+    setFormData(prev=>({
+      ...prev,
+      variants: computeVariants(prev.size, prev.color, prev.extraOption, prev.variants)
+    }));
+  }, [formData.size, formData.color, formData.extraOption]);
 
   const handleVariantBarcodeChange=(idx,val)=>{
     const copy=[...formData.variants];
@@ -504,15 +529,31 @@ function ClothesList() {
             helperText="예: 블랙,화이트"
             required
           />
-          <Typography variant="h6" gutterBottom>바코드 입력</Typography>
-          <Grid container spacing={2}>
-            {formData.variants.map((variant,index)=>(
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Typography variant="subtitle2" gutterBottom>{`${formData.productName || ''} ${variant.size} / ${variant.color}`}</Typography>
-                <TextField fullWidth label="바코드" value={variant.barcode} onChange={e=>handleVariantBarcodeChange(index,e.target.value)} required/>
+          <TextField
+            fullWidth
+            label="추가옵션 (쉼표로 구분, 선택)"
+            name="extraOption"
+            margin="normal"
+            value={formData.extraOption}
+            onChange={handleInputChange}
+            helperText="예: 원단,소재"
+          />
+          {formData.variants.length > 0 && (
+            <>
+              <Typography variant="h6" gutterBottom>바코드 입력</Typography>
+              <Grid container spacing={2}>
+                {formData.variants.map((variant,index)=>(
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Typography variant="subtitle2" gutterBottom>{(()=>{
+                      const parts=[variant.size, variant.color, variant.extraOption].filter(Boolean);
+                      return `${formData.productName || ''} ${parts.join(' / ')}`.trim();
+                    })()}</Typography>
+                    <TextField fullWidth label="바코드" value={variant.barcode} onChange={e=>handleVariantBarcodeChange(index,e.target.value)} />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </>
+          )}
           <TextField
             fullWidth
             label="도매처명"

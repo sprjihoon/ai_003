@@ -140,7 +140,7 @@ router.post('/upload', auth, upload.single('file'), async (req, res) => {
             color: colorRaw.split(',')[0].trim(),
             extraOption: extraOptionRaw ? extraOptionRaw.split(',')[0].trim() : null,
             barcode
-          });
+          }, { tenant_id: req.user.tenant_id });
         }
 
         results.success++;

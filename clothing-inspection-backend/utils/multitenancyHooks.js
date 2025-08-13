@@ -28,6 +28,14 @@ function addTenantHooks(model){
     }
   });
 
+  // ───── beforeValidate ───────────────────────
+  // notNull 검증 전에 tenant_id 를 주입해야 Sequelize의 notNull Validation 에러를 피할 수 있다.
+  model.addHook('beforeValidate', (instance, options={})=>{
+    if(options.tenant_id && instance && !instance.tenant_id){
+      instance.tenant_id = options.tenant_id;
+    }
+  });
+
   // ───── beforeCreate ─────────────────────────
   model.addHook('beforeCreate', (instance, options={})=>{
     if(options.tenant_id && !instance.tenant_id){
