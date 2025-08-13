@@ -67,13 +67,12 @@ function ClothesList() {
     const required = [
       formData.company,
       formData.productName,
-      formData.size,
-      formData.color,
       formData.wholesaler,
       formData.wholesalerProductName
     ];
     if(required.some(f=>!f || !f.toString().trim())) return false;
-    return true;
+    const oneOf = [formData.size, formData.color, formData.extraOption].some(v=>v && v.toString().trim());
+    return oneOf;
   }, [formData]);
 
   const fetchProducts = async () => {
@@ -517,7 +516,6 @@ function ClothesList() {
             value={formData.size}
             onChange={handleInputChange}
             helperText="예: 1,2,3"
-            required
           />
           <TextField
             fullWidth
@@ -527,7 +525,6 @@ function ClothesList() {
             value={formData.color}
             onChange={handleInputChange}
             helperText="예: 블랙,화이트"
-            required
           />
           <TextField
             fullWidth

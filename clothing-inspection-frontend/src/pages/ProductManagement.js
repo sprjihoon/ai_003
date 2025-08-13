@@ -488,7 +488,7 @@ function ProductManagement() {
                   name="size"
                   value={formData.size}
                   onChange={handleInputChange}
-                  helperText="예: 1,2,3 (비워두면 원사이즈)"
+                  helperText="예: 1,2,3 (비워도 됨)"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -498,7 +498,7 @@ function ProductManagement() {
                   name="color"
                   value={formData.color}
                   onChange={handleInputChange}
-                  helperText="예: 블랙,화이트 (비워두면 단일 컬러)"
+                  helperText="예: 블랙,화이트 (비워도 됨)"
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
