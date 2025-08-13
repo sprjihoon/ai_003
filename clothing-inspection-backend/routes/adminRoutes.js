@@ -454,6 +454,25 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 		await ensureColumn('inspection_details', 'normalQuantity', "normalQuantity INT NULL AFTER totalQuantity");
 		await ensureColumn('inspection_details', 'defectQuantity', "defectQuantity INT NULL AFTER normalQuantity");
 
+		// inspection_reads 테이블 생성/보강 (읽음 이력)
+		const [ir] = await sequelize.query("SHOW TABLES LIKE 'inspection_reads'");
+		if(!Array.isArray(ir) || ir.length===0){
+			await sequelize.query(`
+				CREATE TABLE IF NOT EXISTS inspection_reads (
+					inspection_id INT NOT NULL,
+					user_id INT NOT NULL,
+					lastViewedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					UNIQUE KEY uniq_inspection_user (inspection_id, user_id)
+				)
+			`);
+		}else{
+			await ensureColumn('inspection_reads', 'inspection_id', "inspection_id INT NOT NULL");
+			await ensureColumn('inspection_reads', 'user_id', "user_id INT NOT NULL");
+			await ensureColumn('inspection_reads', 'lastViewedAt', "lastViewedAt DATETIME NULL DEFAULT CURRENT_TIMESTAMP");
+			// 보조: 유니크 키 없으면 추가
+			try{ await sequelize.query("ALTER TABLE inspection_reads ADD UNIQUE KEY uniq_inspection_user (inspection_id, user_id)"); }catch(_){ /* ignore if exists */ }
+		}
+
 		res.json({ success:true });
 	}catch(err){
 		console.error('schema ensure error', err);
