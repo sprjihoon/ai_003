@@ -443,6 +443,10 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 					uploadedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 				)
 			`);
+		}else{
+			// 누락 컬럼 보강
+			await ensureColumn('inspection_receipt_photos', 'photoUrl', "photoUrl VARCHAR(255) NULL AFTER inspectionId");
+			await ensureColumn('inspection_receipt_photos', 'uploadedAt', "uploadedAt DATETIME NULL DEFAULT CURRENT_TIMESTAMP AFTER photoUrl");
 		}
 
 		res.json({ success:true });
