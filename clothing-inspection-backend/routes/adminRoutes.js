@@ -413,6 +413,9 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 		await ensureColumn('products', 'wholesalerProductName', "wholesalerProductName VARCHAR(255) NULL AFTER wholesaler");
 		await ensureColumn('products', 'location', "location VARCHAR(255) NULL AFTER wholesalerProductName");
 
+		// inspections 테이블에 tenant_id 없으면 추가
+		await ensureColumn('inspections', 'tenant_id', "tenant_id VARCHAR(64) NULL AFTER inspector_id");
+
 		// inspection_comments 테이블이 없으면 생성
 		const [ic] = await sequelize.query("SHOW TABLES LIKE 'inspection_comments'");
 		if(!Array.isArray(ic) || ic.length===0){

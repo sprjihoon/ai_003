@@ -134,7 +134,7 @@ const InspectionRegister = ({ open, onClose, companies, products, onSubmit }) =>
     }));
   };
 
-  // 입력값 검증 (필수: 전체수량, 정상수량, 제품사진)
+  // 입력값 검증 (필수: 전체수량)
   const validateInputs = () => {
     if (!selectedCompany) {
       enqueueSnackbar('업체를 선택해주세요.', { variant: 'error' });
@@ -146,11 +146,14 @@ const InspectionRegister = ({ open, onClose, companies, products, onSubmit }) =>
     }
     for (const variant of selectedVariants) {
       const input = optionInputs[variant.barcode] || {};
-      if (!input.total || !input.normal) {
-        enqueueSnackbar(`${variant.productName} (${variant.barcode})의 전체수량과 정상수량을 입력해주세요.`, { variant: 'error' });
+      if (!input.total) {
+        enqueueSnackbar(`${variant.productName} (${variant.barcode})의 전체수량을 입력해주세요.`, { variant: 'error' });
         return false;
       }
-      if (Number(input.normal) + Number(input.defect || 0) > Number(input.total)) {
+      const normal = Number(input.normal || 0);
+      const defect = Number(input.defect || 0);
+      const total = Number(input.total);
+      if (normal + defect > total) {
         enqueueSnackbar(`${variant.productName} (${variant.barcode})의 정상수량과 불량수량의 합이 전체수량을 초과할 수 없습니다.`, { variant: 'error' });
         return false;
       }
