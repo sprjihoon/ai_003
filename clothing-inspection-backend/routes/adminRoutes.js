@@ -393,18 +393,31 @@ router.delete('/tenants/:tenantId/full', auth, isSuperAdmin, async (req, res) =>
 //  POST /api/admin/schema/ensure-tenant-columns
 // ─────────────────────────────
 router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res)=>{
-  const sequelize = require('../config/database');
-  try{
-    // product_variants.tenant_id 없으면 추가
-    const [rows] = await sequelize.query("SHOW COLUMNS FROM product_variants LIKE 'tenant_id'");
-    if(!Array.isArray(rows) || rows.length===0){
-      await sequelize.query("ALTER TABLE product_variants ADD COLUMN tenant_id VARCHAR(64) NULL AFTER barcode");
-    }
-    res.json({ success:true });
-  }catch(err){
-    console.error('schema ensure error', err);
-    res.status(500).json({ message: err.message });
-  }
+	const sequelize = require('../config/database');
+	try{
+		// product_variants.tenant_id 없으면 추가
+		const [rows] = await sequelize.query("SHOW COLUMNS FROM product_variants LIKE 'tenant_id'");
+		if(!Array.isArray(rows) || rows.length===0){
+			await sequelize.query("ALTER TABLE product_variants ADD COLUMN tenant_id VARCHAR(64) NULL AFTER barcode");
+		}
+
+		// products 테이블 필수 컬럼 보정
+		const ensureColumn = async (table, column, ddl) => {
+			const [r] = await sequelize.query(`SHOW COLUMNS FROM ${table} LIKE '${column}'`);
+			if(!Array.isArray(r) || r.length===0){
+				await sequelize.query(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+			}
+		};
+		await ensureColumn('products', 'size', "size JSON NULL AFTER productName");
+		await ensureColumn('products', 'color', "color JSON NULL AFTER size");
+		await ensureColumn('products', 'wholesalerProductName', "wholesalerProductName VARCHAR(255) NULL AFTER wholesaler");
+		await ensureColumn('products', 'location', "location VARCHAR(255) NULL AFTER wholesalerProductName");
+
+		res.json({ success:true });
+	}catch(err){
+		console.error('schema ensure error', err);
+		res.status(500).json({ message: err.message });
+	}
 });
 
 module.exports = router; 
