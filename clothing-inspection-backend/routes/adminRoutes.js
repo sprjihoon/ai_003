@@ -413,6 +413,35 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 		await ensureColumn('products', 'wholesalerProductName', "wholesalerProductName VARCHAR(255) NULL AFTER wholesaler");
 		await ensureColumn('products', 'location', "location VARCHAR(255) NULL AFTER wholesalerProductName");
 
+		// inspection_comments 테이블이 없으면 생성
+		const [ic] = await sequelize.query("SHOW TABLES LIKE 'inspection_comments'");
+		if(!Array.isArray(ic) || ic.length===0){
+			await sequelize.query(`
+				CREATE TABLE IF NOT EXISTS inspection_comments (
+					id INT AUTO_INCREMENT PRIMARY KEY,
+					content TEXT NOT NULL,
+					parent_comment_id INT NULL,
+					inspection_id INT NOT NULL,
+					user_id INT NOT NULL,
+					created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+				)
+			`);
+		}
+
+		// inspection_receipt_photos 테이블이 없으면 생성
+		const [irp] = await sequelize.query("SHOW TABLES LIKE 'inspection_receipt_photos'");
+		if(!Array.isArray(irp) || irp.length===0){
+			await sequelize.query(`
+				CREATE TABLE IF NOT EXISTS inspection_receipt_photos (
+					id INT AUTO_INCREMENT PRIMARY KEY,
+					inspectionId INT NOT NULL,
+					photoUrl VARCHAR(255) NOT NULL,
+					uploadedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+				)
+			`);
+		}
+
 		res.json({ success:true });
 	}catch(err){
 		console.error('schema ensure error', err);
