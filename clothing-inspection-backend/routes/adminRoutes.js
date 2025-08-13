@@ -449,4 +449,18 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 	}
 });
 
+router.get('/schema/verify', auth, isSuperAdmin, async (_req,res)=>{
+	const sequelize = require('../config/database');
+	try{
+		const q = async (sql)=>{ try{ const [r]=await sequelize.query(sql); return r; }catch(e){ return { error:e.message }; } };
+		const result = {
+			products: await q("SHOW COLUMNS FROM products"),
+			product_variants: await q("SHOW COLUMNS FROM product_variants"),
+			inspection_comments: await q("SHOW COLUMNS FROM inspection_comments"),
+			inspection_receipt_photos: await q("SHOW COLUMNS FROM inspection_receipt_photos")
+		};
+		res.json({ success:true, result });
+	}catch(err){ res.status(500).json({ success:false, message: err.message }); }
+});
+
 module.exports = router; 
