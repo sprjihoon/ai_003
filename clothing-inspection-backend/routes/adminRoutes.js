@@ -415,6 +415,7 @@ router.post('/schema/ensure-tenant-columns', auth, isSuperAdmin, async (_req,res
 
 		// inspections 테이블에 tenant_id 없으면 추가
 		await ensureColumn('inspections', 'tenant_id', "tenant_id VARCHAR(64) NULL AFTER inspector_id");
+		await ensureColumn('inspections', 'rejectReason', "rejectReason TEXT NULL AFTER comment");
 
 		// inspection_comments 테이블이 없으면 생성
 		const [ic] = await sequelize.query("SHOW TABLES LIKE 'inspection_comments'");
